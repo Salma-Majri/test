@@ -1,23 +1,30 @@
-from sklearn.datasets import load_iris
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-from sklearn.model_selection import train_test_split
+import tensorflow as tf
+from tensorflow.keras import layers, models
 
-print("--- Début du test d'IA ---")
+print("--- Début de l'entraînement Keras (Fashion-MNIST) ---")
 
-# 1. Charger un petit dataset simple (les fleurs d'Iris)
-data = load_iris()
-X_train, X_test, y_train, y_test = train_test_split(
-    data.data, data.target, test_size=0.2, random_state=42
-)
+# 1. Charger un dataset Keras intégré (images de vêtements 28x28)
+(X_train, y_train), (X_test, y_test) = tf.keras.datasets.fashion_mnist.load_data()
 
-# 2. Entraîner un modèle simple (Régression Logistique)
-model = LogisticRegression(max_iter=200)
-model.fit(X_train, y_train)
+# Normaliser les pixels entre 0 et 1
+X_train, X_test = X_train / 255.0, X_test / 255.0
 
-# 3. Tester et afficher le résultat
-predictions = model.predict(X_test)
-acc = accuracy_score(y_test, predictions)
+# 2. Construire un modèle simple (Réseau de neurones Dense)
+model = models.Sequential([
+    layers.Flatten(input_shape=(28, 28)),
+    layers.Dense(64, activation='relu'),
+    layers.Dense(10, activation='softmax')
+])
 
-print(f"Modèle entraîné avec succès ! Précision : {acc * 100:.2f}%")
-print("--- Fin du test ---")
+model.compile(optimizer='adam',
+              loss='sparse_categorical_crossentropy',
+              metrics=['accuracy'])
+
+# 3. Entraîner le modèle (1 seule époque 'epochs=1' juste pour tester rapidement le flux)
+print("Entraînement en cours sur le dataset...")
+model.fit(X_train, y_train, epochs=1, batch_size=64)
+
+# 4. Évaluer sur le jeu de test
+test_loss, test_acc = model.evaluate(X_test, y_test, verbose=0)
+print(f"Modèle entraîné avec succès ! Précision sur le test : {test_acc * 100:.2f}%")
+print("--- Fin du test Keras ---")
